@@ -1,58 +1,44 @@
 const express = require('express');
-const app = express();
-
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
+const app = express();
 require('./config/config');
 
 // MDH bodyParser
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+app.use( require('./routes/usuario') );
 
-app.get('/', function (req, res) {
-    res.json({
-        message: 'Hello World'
+// mongodb+srv://root:root@cluster0.skhs1.mongodb.net/cafe?retryWrites=true&w=majority
+
+const connectDB = async () => {
+
+    await mongoose.connect(process.env.URL_DB, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
+        useCreateIndex: true
     });
-});
 
-app.get('/usuario', function (req, res) {
-    res.json({
-        message: 'getUsuario'
-    });
-});
+    console.log('Conectado a mongoDB');
 
-app.post('/usuario', function (req, res) {
+}
 
-    const body = req.body;
+const initDB = () => {
 
-    if ( body.nombre === undefined ) {
-        res.status(400).json({
-            ok: false,
-            message: 'El nombre es necesario'
-        });
+    try {
+        connectDB();
+    } catch (err) {
+        //console.log('Error al intentar conectar mongoDB', err);
+        throw err;
     }
 
-    res.json({
-        message: 'postUsuario',
-        body
-    });
-});
+}
 
-app.put('/usuario/:id', function (req, res) {
-    const id = req.params.id;
-
-    res.json({
-        message: `putUsuario ${id}`
-    });
-});
-
-app.delete('/usuario', function (req, res) {
-    res.json({
-        message: 'deleteUsuario'
-    });
-});
+initDB();
 
 app.listen(process.env.PORT, () => {
-    console.log(`Escuchando en el puerto ${ process.env.PORT }`);
+    console.log(`Escuchando en el puerto ${process.env.PORT}`);
 });
